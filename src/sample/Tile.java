@@ -17,6 +17,7 @@ public class Tile extends StackPane {
     private Rectangle border = new Rectangle(TILE_SIZE - 2, TILE_SIZE - 2);
 
     private boolean flag;
+    public boolean isWave;
 
     private ControllerGame controllerGame;
 
@@ -50,23 +51,21 @@ public class Tile extends StackPane {
     }
 
     public void openPC() {
-        isOpen = true;
-        text.setVisible(false);
-        border.setFill(Color.DARKBLUE);
+        if(flag) {
+            setDarkBlue();
+        }else {
+            setBlue();
+        }
     }
 
     public void open() {
         if (flag) {
             if (isOpen)
                 return;
-            isOpen = true;
-            text.setVisible(false);
-            border.setFill(Color.DARKRED);
+            setDarkRed();
         } else if (!flag) {
             if (checkCriterion(controllerGame.getFixX(), controllerGame.getFixY()) && !isOpen) {
-                isOpen = true;
-                text.setVisible(false);
-                border.setFill(Color.DARKRED);
+                setRed();
                 controllerGame.setFixX(x);
                 controllerGame.setFixY(y);
                 if (x == 0 && y == 0) {
@@ -76,6 +75,30 @@ public class Tile extends StackPane {
                 }
             }
         }
+    }
+
+    public void setDarkRed() {
+        isOpen = true;
+        text.setVisible(false);
+        border.setFill(Color.DARKRED);
+    }
+
+    public void setDarkBlue() {
+        isOpen = true;
+        text.setVisible(false);
+        border.setFill(Color.DARKBLUE);
+    }
+
+    private void setRed() {
+        isOpen = true;
+        text.setVisible(false);
+        border.setFill(Color.DARKORANGE);
+    }
+
+    private void setBlue() {
+        isOpen = true;
+        text.setVisible(false);
+        border.setFill(Color.BLUE);
     }
 
     public boolean checkCriterion(int fixX, int fixY) {

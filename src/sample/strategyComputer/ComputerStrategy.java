@@ -14,7 +14,6 @@ public abstract class ComputerStrategy {
     protected Label labelSumPC;
 
     protected int fixX;
-
     protected int fixY;
 
     protected boolean start;
@@ -28,9 +27,17 @@ public abstract class ComputerStrategy {
     public int getFixX() {
         return fixX;
     }
-
     public int getFixY() {
         return fixY;
+    }
+    public void setFixX(int fixX) {
+        this.fixX = fixX;
+    }
+    public void setFixY(int fixY) {
+        this.fixY = fixY;
+    }
+    public void setSumPC(int sumPC) {
+        this.sumPC = sumPC;
     }
 
     protected ComputerStrategy(Tile[][] grid, Label labelSumPC, boolean start) {
@@ -51,7 +58,49 @@ public abstract class ComputerStrategy {
 
     public abstract void strategyComputer(int x, int y);
 
-    protected void CheckOnPlaceStartOfTheGame(Tile tile) {
+    private void clearWave() {
+        for (int i = 0; i < X_TILES; i++) {
+            for(int j = 0; j < Y_TILES; j++) {
+                grid[i][j].isWave = false;
+            }
+        }
+    }
+
+    public boolean isSearchPath(int x, int y) {
+        clearWave();
+        int l = 0;
+        grid[x][y].isWave = true;
+        while(l < X_TILES*Y_TILES) {
+            for(int i = 0; i < X_TILES; i++) {
+                for(int j = 0; j < Y_TILES; j++) {
+                    if(grid[i][j].isWave) {
+                        waveCell(i, j);
+                    }
+                    if(grid[fixX][fixY].isWave) {
+                        return true;
+                    }
+                }
+            }
+            l++;
+        }
+        return false;
+    }
+
+    private void waveCell(int x, int y) {
+        for (int i = -MAX_STEP; i <= MAX_STEP; i++) {
+            for (int j = -MAX_STEP; j <= MAX_STEP; j++) {
+                if (checkOnBoundsCondition(x + i, y + j) && checkOnNotExistingCells(i, j)
+                        && (!grid[x + i][y + j].isOpen)) {
+                    grid[x + i][y + j].isWave = true;
+                }
+                if(x + i == fixX && y + j == fixY) {
+                    grid[fixX][fixY].isWave = true;
+                }
+            }
+        }
+    }
+
+    protected void checkOnPlaceStartOfTheGame(Tile tile) {
         if(start) {
             tile.open();
         }
@@ -60,7 +109,7 @@ public abstract class ComputerStrategy {
         }
     }
 
-    protected int CheckOnPlaceStartOfTheGame() {
+    protected int checkOnPlaceStartOfTheGame() {
         if(!start) {
             return (Math.abs(X_TILES - fixX)) * Math.abs(Y_TILES - fixY);
         }

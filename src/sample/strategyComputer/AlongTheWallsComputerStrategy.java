@@ -5,12 +5,16 @@ import sample.Tile;
 
 import static sample.Main.*;
 
-public class MinimumComputerStrategy extends ComputerStrategy {
-    @Override
+public class AlongTheWallsComputerStrategy extends ComputerStrategy {
+
+    public AlongTheWallsComputerStrategy(Tile[][] grid, Label labelSumPC, boolean start) {
+        super(grid, labelSumPC, start);
+    }
+
     public void strategyComputer(int x, int y) {
         if (isExit) {
             if (checkOnExistenceOfTheCode(fixX, fixY)) {
-                seachMinElement(fixX, fixY);
+                seachMaxElement(fixX, fixY);
                 Tile tile = grid[fixX][fixY];
                 checkOnPlaceStartOfTheGame(tile);
                 sumPC += checkOnPlaceStartOfTheGame();
@@ -21,13 +25,13 @@ public class MinimumComputerStrategy extends ComputerStrategy {
         }
     }
 
-    private void seachMinElement(int x, int y) {
-        int minEl = 0;
+    private void seachMaxElement(int x, int y) {
+        int maxEl = (X_TILES + 1) * (Y_TILES + 1);
         for (int i = -MAX_STEP; i <= MAX_STEP; i++) {
             for (int j = -MAX_STEP; j <= MAX_STEP; j++) {
                 if (checkOnBoundsCondition(x + i, y + j) && checkOnNotExistingCells(i, j) && !grid[x + i][y + j].isOpen) {
-                    if (minEl < countMultElement(x, y, i, j)) {
-                        minEl = countMultElement(x, y, i, j);
+                    if (maxEl > countMultElement(x, y, i, j)) {
+                        maxEl = countMultElement(x, y, i, j);
                         fixX = x + i;
                         fixY = y + j;
                     }
@@ -41,9 +45,5 @@ public class MinimumComputerStrategy extends ComputerStrategy {
             return (x + i + 1) * (y + j + 1);
         }
         return (X_TILES - x - i - 1) * (Y_TILES - y - j - 1);
-    }
-
-    public MinimumComputerStrategy(Tile[][] grid, Label labelSumPC, boolean start) {
-        super(grid, labelSumPC, start);
     }
 }

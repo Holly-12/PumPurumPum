@@ -4,13 +4,11 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Parent;
+import javafx.scene.*;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
@@ -22,6 +20,10 @@ public class Main extends Application {
     public static final int TILE_SIZE = 40;
     public static final int W = 400;
     public static final int H = 400;
+
+    public enum StrategyPCvsPC {MaximumvsMaximum, MaximumvsMinimum, MaximumvsMirror, MaximumvsAlongTheWalls,
+        MinimumvsMinimum, MinimumvsMaximum, MinimumvsMirror, MinimumvsAlongTheWalls, AlongTheWallsvsAlongTheWalls,
+        AlongTheWallsvsMinimum, AlongTheWallsvsMirror, AlongTheWallsvsMaximum};
 
     public static final int X_TILES = W / TILE_SIZE;
     public static final int Y_TILES = H / TILE_SIZE;
@@ -41,6 +43,8 @@ public class Main extends Application {
 
     Label labelNamePlayer1 = new Label("Player1");
     Label labelNamePlayer2 = new Label("Player2");
+
+    String namePlayer = "";
 
     private Parent createContent(boolean flag) {
         Pane root = new Pane();
@@ -74,7 +78,10 @@ public class Main extends Application {
         HBox hbox = new HBox();
         VBox vbox = new VBox();
         grid = new Tile[X_TILES][Y_TILES];
-        labelNamePlayer1 = new Label("Player1");
+        if (namePlayer.isEmpty()) {
+            labelNamePlayer1 = new Label("Player1");
+        } else labelNamePlayer1 = new Label(namePlayer);
+
         labelNamePlayer2 = new Label("Player2");
 
         sumPlayer1 = new Label("0");
@@ -95,15 +102,10 @@ public class Main extends Application {
 
         if (!flag) {
             controllerGame = new ControllerGame(sumPlayer1, sumPlayer2, grid, labelNamePlayer1, labelNamePlayer2);
-
         }
 
         vbox.getChildren().addAll(hbox, createContent(flag));
 
-        if (flag) {
-            controllerGame = new ControllerGame(grid, sumPlayer1, sumPlayer2, labelNamePlayer1, labelNamePlayer2);
-            controllerGame.start();
-        }
         root.getChildren().add(vbox);
 
         return root;
@@ -111,12 +113,14 @@ public class Main extends Application {
 
     private void createMenu(VBox vbox) {
         MenuBar menuBar = new MenuBar();
-        //menuBar.prefWidthProperty().bind(primaryStage.widthProperty());
-        //root.setTop(menuBar);
+        menuBar.getMenus().addAll(createMenuFileItem(), createMenuPCvsPCItem(), createMenuPlayervsPCItem(),
+                createMenuAboutTheGameItem());
+        vbox.getChildren().add(menuBar);
+    }
 
+    private Menu createMenuFileItem() {
         Menu fileMenu = new Menu("File");
         MenuItem newMenuItem = new MenuItem("New Player");
-        //MenuItem saveMenuItem = new MenuItem("Save");
         MenuItem exitMenuItem = new MenuItem("Exit");
         exitMenuItem.setOnAction(actionEvent -> Platform.exit());
         newMenuItem.setOnAction(event -> {
@@ -126,31 +130,220 @@ public class Main extends Application {
             dialog.setContentText("Please enter your name:");
             Optional<String> result = dialog.showAndWait();
             if (result.isPresent()) {
+                namePlayer = result.get();
                 labelNamePlayer1.setText(result.get());
             }
         });
-
         fileMenu.getItems().addAll(newMenuItem, new SeparatorMenuItem(), exitMenuItem);
+        return fileMenu;
+    }
 
-        Menu modeMenu = new Menu("Mode");
-//        MenuItem PCvsPlayerMenuItem = new MenuItem("PC vs Player");
-        MenuItem PCvsPCMenuItem = new MenuItem("PC vs PC");
-        MenuItem playervsPCMenuItem = new MenuItem("Player vs PC");
-//        MenuItem Player1vsPlayer2CMenuItem = new MenuItem("Player1 vs Player2");
-        playervsPCMenuItem.setOnAction(event -> {
-            scene = new Scene(createStage(false));
+    private MenuItem createMaximumvsMaximumMenuItem() {
+        MenuItem MaximumvsMaximumMenuItem = new MenuItem("Maximum vs Maximum");
+        MaximumvsMaximumMenuItem.setOnAction(event -> {
+            namePlayer = "";
+            scene = new Scene(createStage(true));
+            controllerGame = new ControllerGame(grid, sumPlayer1, sumPlayer2, labelNamePlayer1, labelNamePlayer2,
+                    StrategyPCvsPC.MaximumvsMaximum);
+            controllerGame.start();
             primaryStage.setScene(scene);
             primaryStage.show();
+            controllerGame.searchWinnerPCvsPC();
         });
-        PCvsPCMenuItem.setOnAction(event -> {
+        return  MaximumvsMaximumMenuItem;
+    }
+
+    private MenuItem createMaximumvsMinimumMenuItem() {
+        MenuItem MaximumvsMinimumMenuItem = new MenuItem("Maximum vs Minimum");
+        MaximumvsMinimumMenuItem.setOnAction(event -> {
+            namePlayer = "";
             scene = new Scene(createStage(true));
+            controllerGame = new ControllerGame(grid, sumPlayer1, sumPlayer2, labelNamePlayer1, labelNamePlayer2,
+                    StrategyPCvsPC.MaximumvsMinimum);
+            controllerGame.start();
             primaryStage.setScene(scene);
             primaryStage.show();
             controllerGame.searchWinnerPCvsPC();
         });
 
-        modeMenu.getItems().addAll(PCvsPCMenuItem, playervsPCMenuItem);
+        return MaximumvsMinimumMenuItem;
+    }
 
+    private MenuItem createMaximumvsMirrorMenuItem() {
+        MenuItem MaximumvsMirrorMenuItem = new MenuItem("Maximum vs Mirror");
+        MaximumvsMirrorMenuItem.setOnAction(event -> {
+            namePlayer = "";
+            scene = new Scene(createStage(true));
+            controllerGame = new ControllerGame(grid, sumPlayer1, sumPlayer2, labelNamePlayer1, labelNamePlayer2,
+                    StrategyPCvsPC.MaximumvsMirror);
+            controllerGame.start();
+            primaryStage.setScene(scene);
+            primaryStage.show();
+            controllerGame.searchWinnerPCvsPC();
+        });
+        return MaximumvsMirrorMenuItem;
+    }
+
+    private MenuItem createMaximumvsAlongTheWallsMenuItem() {
+        MenuItem MaximumvsAlongTheWallsMenuItem = new MenuItem("Maximum vs AlongTheWalls");
+        MaximumvsAlongTheWallsMenuItem.setOnAction(event -> {
+            namePlayer = "";
+            scene = new Scene(createStage(true));
+            controllerGame = new ControllerGame(grid, sumPlayer1, sumPlayer2, labelNamePlayer1, labelNamePlayer2,
+                    StrategyPCvsPC.MaximumvsAlongTheWalls);
+            controllerGame.start();
+            primaryStage.setScene(scene);
+            primaryStage.show();
+            controllerGame.searchWinnerPCvsPC();
+        });
+        return MaximumvsAlongTheWallsMenuItem;
+    }
+
+    private MenuItem createMinimumvsMinimumMenuItem() {
+        MenuItem MinimumvsMinimumMenuItem = new MenuItem("Minimum vs Minimum");
+        MinimumvsMinimumMenuItem.setOnAction(event -> {
+            namePlayer = "";
+            scene = new Scene(createStage(true));
+            controllerGame = new ControllerGame(grid, sumPlayer1, sumPlayer2, labelNamePlayer1, labelNamePlayer2,
+                    StrategyPCvsPC.MinimumvsMinimum);
+            controllerGame.start();
+            primaryStage.setScene(scene);
+            primaryStage.show();
+            controllerGame.searchWinnerPCvsPC();
+        });
+        return MinimumvsMinimumMenuItem;
+    }
+
+    private MenuItem createMinimumvsMaximumMenuItem() {
+        MenuItem MinimumvsMaximumMenuItem = new MenuItem("Minimum vs Maximum");
+        MinimumvsMaximumMenuItem.setOnAction(event -> {
+            namePlayer = "";
+            scene = new Scene(createStage(true));
+            controllerGame = new ControllerGame(grid, sumPlayer1, sumPlayer2, labelNamePlayer1, labelNamePlayer2,
+                    StrategyPCvsPC.MinimumvsMaximum);
+            controllerGame.start();
+            primaryStage.setScene(scene);
+            primaryStage.show();
+            controllerGame.searchWinnerPCvsPC();
+        });
+        return MinimumvsMaximumMenuItem;
+    }
+
+    private MenuItem createMinimumvsMirrorMenuItem() {
+        MenuItem MinimumvsMirrorMenuItem = new MenuItem("Minimum vs Mirror");
+        MinimumvsMirrorMenuItem.setOnAction(event -> {
+            namePlayer = "";
+            scene = new Scene(createStage(true));
+            controllerGame = new ControllerGame(grid, sumPlayer1, sumPlayer2, labelNamePlayer1, labelNamePlayer2,
+                    StrategyPCvsPC.MinimumvsMirror);
+            controllerGame.start();
+            primaryStage.setScene(scene);
+            primaryStage.show();
+            controllerGame.searchWinnerPCvsPC();
+        });
+        return MinimumvsMirrorMenuItem;
+    }
+
+    private MenuItem createMinimumvsAlongTheWallsMenuItem() {
+        MenuItem MinimumvsAlongTheWallsMenuItem = new MenuItem("Minimum vs AlongTheWalls");
+        MinimumvsAlongTheWallsMenuItem.setOnAction(event -> {
+            namePlayer = "";
+            scene = new Scene(createStage(true));
+            controllerGame = new ControllerGame(grid, sumPlayer1, sumPlayer2, labelNamePlayer1, labelNamePlayer2,
+                    StrategyPCvsPC.MinimumvsAlongTheWalls);
+            controllerGame.start();
+            primaryStage.setScene(scene);
+            primaryStage.show();
+            controllerGame.searchWinnerPCvsPC();
+        });
+        return MinimumvsAlongTheWallsMenuItem;
+    }
+
+    private MenuItem createAlongTheWallsvsAlongTheWallsMenuItem() {
+        MenuItem AlongTheWallsvsAlongTheWallsMenuItem = new MenuItem("AlongTheWalls vs AlongTheWalls");
+        AlongTheWallsvsAlongTheWallsMenuItem.setOnAction(event -> {
+            namePlayer = "";
+            scene = new Scene(createStage(true));
+            controllerGame = new ControllerGame(grid, sumPlayer1, sumPlayer2, labelNamePlayer1, labelNamePlayer2,
+                    StrategyPCvsPC.AlongTheWallsvsAlongTheWalls);
+            controllerGame.start();
+            primaryStage.setScene(scene);
+            primaryStage.show();
+            controllerGame.searchWinnerPCvsPC();
+        });
+        return AlongTheWallsvsAlongTheWallsMenuItem;
+    }
+
+    private MenuItem createAlongTheWallsvsMinimumMenuItem() {
+        MenuItem AlongTheWallsvsMinimumMenuItem = new MenuItem("AlongTheWalls vs Minimum");
+        AlongTheWallsvsMinimumMenuItem.setOnAction(event -> {
+            namePlayer = "";
+            scene = new Scene(createStage(true));
+            controllerGame = new ControllerGame(grid, sumPlayer1, sumPlayer2, labelNamePlayer1, labelNamePlayer2,
+                    StrategyPCvsPC.AlongTheWallsvsMinimum);
+            controllerGame.start();
+            primaryStage.setScene(scene);
+            primaryStage.show();
+            controllerGame.searchWinnerPCvsPC();
+        });
+        return AlongTheWallsvsMinimumMenuItem;
+    }
+
+    private MenuItem createAlongTheWallsvsMirrorMenuItem() {
+        MenuItem AlongTheWallsvsMirrorMenuItem = new MenuItem("AlongTheWalls vs Mirror");
+        AlongTheWallsvsMirrorMenuItem.setOnAction(event -> {
+            namePlayer = "";
+            scene = new Scene(createStage(true));
+            controllerGame = new ControllerGame(grid, sumPlayer1, sumPlayer2, labelNamePlayer1, labelNamePlayer2,
+                    StrategyPCvsPC.AlongTheWallsvsMirror);
+            controllerGame.start();
+            primaryStage.setScene(scene);
+            primaryStage.show();
+            controllerGame.searchWinnerPCvsPC();
+        });
+        return AlongTheWallsvsMirrorMenuItem;
+    }
+
+    private MenuItem createAlongTheWallsvsMaximumMenuItem() {
+        MenuItem AlongTheWallsvsMaximumMenuItem = new MenuItem("AlongTheWalls vs Maximum");
+        AlongTheWallsvsMaximumMenuItem.setOnAction(event -> {
+            namePlayer = "";
+            scene = new Scene(createStage(true));
+            controllerGame = new ControllerGame(grid, sumPlayer1, sumPlayer2, labelNamePlayer1, labelNamePlayer2,
+                    StrategyPCvsPC.AlongTheWallsvsMaximum);
+            controllerGame.start();
+            primaryStage.setScene(scene);
+            primaryStage.show();
+            controllerGame.searchWinnerPCvsPC();
+        });
+        return AlongTheWallsvsMaximumMenuItem;
+    }
+
+    private Menu createMenuPCvsPCItem() {
+        Menu PCvsPCMenu = new Menu("PC vs PC");
+
+        PCvsPCMenu.getItems().addAll(createMaximumvsMaximumMenuItem(), createMaximumvsMinimumMenuItem(),
+                createMaximumvsMirrorMenuItem(), createMaximumvsAlongTheWallsMenuItem(), createMinimumvsMinimumMenuItem(),
+                createMinimumvsMaximumMenuItem(), createMinimumvsMirrorMenuItem(), createMinimumvsAlongTheWallsMenuItem(),
+                createAlongTheWallsvsAlongTheWallsMenuItem(), createAlongTheWallsvsMinimumMenuItem(),
+                createAlongTheWallsvsMirrorMenuItem(), createAlongTheWallsvsMaximumMenuItem());
+        return PCvsPCMenu;
+    }
+
+    private Menu createMenuPlayervsPCItem() {
+        Menu playervsPCMenu = new Menu("Player vs PC");
+        MenuItem playervsPCMenuItem = new MenuItem("Player vs PC");
+        playervsPCMenuItem.setOnAction(event -> {
+            scene = new Scene(createStage(false));
+            primaryStage.setScene(scene);
+            primaryStage.show();
+        });
+
+        playervsPCMenu.getItems().addAll(playervsPCMenuItem);
+        return playervsPCMenu;
+    }
+
+    private Menu createMenuAboutTheGameItem() {
         Menu aboutTheGameMenu = new Menu("About the game");
         MenuItem aboutTheGameMenuItem = new MenuItem("About the game");
         aboutTheGameMenuItem.setOnAction(event -> {
@@ -178,9 +371,7 @@ public class Main extends Application {
 
         aboutTheGameMenu.getItems().add(aboutTheGameMenuItem);
 
-        menuBar.getMenus().addAll(fileMenu, modeMenu, aboutTheGameMenu);
-
-        vbox.getChildren().add(menuBar);
+        return aboutTheGameMenu;
     }
 
     public static void main(String[] args) {
