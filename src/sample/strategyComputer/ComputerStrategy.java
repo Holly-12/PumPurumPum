@@ -15,9 +15,7 @@ public abstract class ComputerStrategy {
 
     protected int fixX;
     protected int fixY;
-
     protected boolean start;
-
     protected boolean isExit;
 
     public int getSumPC() {

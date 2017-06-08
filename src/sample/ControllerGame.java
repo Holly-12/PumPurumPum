@@ -38,7 +38,8 @@ class RandomComputerStrategyGenerator {
 public class ControllerGame {
 
     private static RandomComputerStrategyGenerator randomComputerStrategyGenerator = new RandomComputerStrategyGenerator();
-    private MaximumComputerStrategy computerStrategyMax;
+    private ComputerStrategy computerStrategyMin1;
+    private ComputerStrategy computerStrategyMin2;
 
     private Tile[][] grid = new Tile[X_TILES][Y_TILES];
 
@@ -78,6 +79,9 @@ public class ControllerGame {
                           Label labelNamePlayer2, Main.StrategyPCvsPC strategyPCvsPC) {
         this.labelNamePlayer1 = labelNamePlayer1;
         this.labelNamePlayer2 = labelNamePlayer2;
+        computerStrategyMin1 = new MinimumComputerStrategy(grid, sumPlayer1, true);
+        computerStrategyMin2 = new MinimumComputerStrategy(grid, sumPlayer2, false);
+
         switch (strategyPCvsPC) {
             case MaximumvsMaximum:
                 computerStrategy = new MaximumComputerStrategy(grid, sumPlayer1, true);
@@ -112,22 +116,18 @@ public class ControllerGame {
                 computerStrategy1 = new AlongTheWallsComputerStrategy(grid, sumPlayer2, false);
                 break;
             case AlongTheWallsvsAlongTheWalls:
-                vsMinimum:
                 computerStrategy = new AlongTheWallsComputerStrategy(grid, sumPlayer1, true);
                 computerStrategy1 = new AlongTheWallsComputerStrategy(grid, sumPlayer2, false);
                 break;
             case AlongTheWallsvsMaximum:
-                vsMinimum:
                 computerStrategy = new AlongTheWallsComputerStrategy(grid, sumPlayer1, true);
                 computerStrategy1 = new MaximumComputerStrategy(grid, sumPlayer2, false);
                 break;
             case AlongTheWallsvsMinimum:
-                vsMinimum:
                 computerStrategy = new AlongTheWallsComputerStrategy(grid, sumPlayer1, true);
                 computerStrategy1 = new MinimumComputerStrategy(grid, sumPlayer2, false);
                 break;
             case AlongTheWallsvsMirror:
-                vsMinimum:
                 computerStrategy = new AlongTheWallsComputerStrategy(grid, sumPlayer1, true);
                 computerStrategy1 = new MirrorComputerStrategy(grid, sumPlayer2, false);
                 break;
@@ -143,13 +143,13 @@ public class ControllerGame {
         fixX = 0;
         fixY = 0;
         computerStrategy = randomComputerStrategyGenerator.next(grid, sumPlayer2, false);
-        computerStrategyMax = new MaximumComputerStrategy(grid, sumPlayer2, false);
+        computerStrategyMin1 = new MinimumComputerStrategy(grid, sumPlayer2, false);
     }
 
     public void searchWinner() {
-        if (sum > computerStrategy.getSumPC()) {
+        if (sum > computerStrategyMin1.getSumPC()) {
             printAlertWinner(labelNamePlayer1.getText());
-        } else if (sum == computerStrategy.getSumPC()) {
+        } else if (sum == computerStrategyMin1.getSumPC()) {
             printAlertWinner("Friendship");
         } else
             printAlertWinner(labelNamePlayer2.getText());
@@ -163,18 +163,29 @@ public class ControllerGame {
     }
 
     public void searchWinnerPCvsPC() {
-        if (computerStrategy.getSumPC() > computerStrategy1.getSumPC()) {
+        if (computerStrategyMin1.getSumPC() > computerStrategyMin2.getSumPC()) {
             printAlertWinner(labelNamePlayer1.getText());
-        } else if (computerStrategy.getSumPC() == computerStrategy1.getSumPC()) {
+        } else if (computerStrategyMin1.getSumPC() == computerStrategyMin2.getSumPC()) {
             printAlertWinner("Friendship");
         } else
             printAlertWinner(labelNamePlayer2.getText());
     }
 
     public void start() {
-        for (int i = 0; i < 50; i++) {
-            computerStrategy.strategyComputer(0, 0);
-            computerStrategy1.strategyComputer(computerStrategy.getFixX(), computerStrategy.getFixY());
+        for (int i = 0; i < 60; i++) {
+            if (computerStrategy1.isSearchPath(computerStrategy.getFixX(), computerStrategy.getFixY())) {
+                computerStrategy.strategyComputer(0, 0);
+                computerStrategyMin1.setFixX(computerStrategy.getFixX());
+                computerStrategyMin1.setFixY(computerStrategy.getFixY());
+                computerStrategyMin1.setSumPC(computerStrategy.getSumPC());
+                computerStrategy1.strategyComputer(computerStrategy.getFixX(), computerStrategy.getFixY());
+                computerStrategyMin2.setFixX(computerStrategy1.getFixX());
+                computerStrategyMin2.setFixY(computerStrategy1.getFixY());
+                computerStrategyMin2.setSumPC(computerStrategy1.getSumPC());
+            } else {
+                computerStrategyMin1.strategyComputer(computerStrategy.getFixX(), computerStrategy.getFixY());
+                computerStrategyMin2.strategyComputer(computerStrategyMin1.getFixX(), computerStrategyMin1.getFixY());
+            }
         }
     }
 
@@ -187,29 +198,29 @@ public class ControllerGame {
         if (computerStrategy.isSearchPath(x, y)) {
             grid[computerStrategy.getFixX()][computerStrategy.getFixY()].setDarkBlue();
             computerStrategy.strategyComputer(x, y);
-            computerStrategyMax.setFixX(computerStrategy.getFixX());
-            computerStrategyMax.setFixY(computerStrategy.getFixY());
-            computerStrategyMax.setSumPC(computerStrategy.getSumPC());
+            computerStrategyMin1.setFixX(computerStrategy.getFixX());
+            computerStrategyMin1.setFixY(computerStrategy.getFixY());
+            computerStrategyMin1.setSumPC(computerStrategy.getSumPC());
             if (!computerStrategy.checkOnExistenceOfTheCode(x, y)) {
-                if (startPC(x, y)) {
-                    searchWinner();
-                }
+                startPC(x, y);
+                searchWinner();
+
             }
         } else {
-            grid[computerStrategyMax.getFixX()][computerStrategyMax.getFixY()].setDarkBlue();
-            computerStrategyMax.strategyComputer(x, y);
-            if (!computerStrategyMax.checkOnExistenceOfTheCode(x, y)) {
-                if (startPC(x, y)) {
-                    searchWinner();
-                }
+            grid[computerStrategyMin1.getFixX()][computerStrategyMin1.getFixY()].setDarkBlue();
+            computerStrategyMin1.strategyComputer(x, y);
+            if (!computerStrategyMin1.checkOnExistenceOfTheCode(x, y)) {
+                startPC(x, y);
+                searchWinner();
+
             }
         }
     }
 
-    private boolean startPC(int x, int y) {
-        for (int i = 0; i < 50; i++) {
-            computerStrategy.strategyComputer(x, y);
+    private void startPC(int x, int y) {
+        for (int i = 0; i < 100; i++) {
+            grid[computerStrategyMin1.getFixX()][computerStrategyMin1.getFixY()].setDarkBlue();
+            computerStrategyMin1.strategyComputer(x, y);
         }
-        return true;
     }
 }
