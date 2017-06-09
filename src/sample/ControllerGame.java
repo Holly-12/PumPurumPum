@@ -13,25 +13,19 @@ class RandomComputerStrategyGenerator {
     private Random rand = new Random(47);
 
     public ComputerStrategy next(Tile[][] grid, Label sumPlayer, boolean start) {
-        if (start) {
-            switch (rand.nextInt(2)) {
-                default:
-                case 0:
-                    return new AlongTheWallsComputerStrategy(grid, sumPlayer, start);
-                case 1:
-                    return new MinimumComputerStrategy(grid, sumPlayer, start);
-            }
-        } else {
-            switch (rand.nextInt(3)) {
-                default:
-                case 0:
-                    return new AlongTheWallsComputerStrategy(grid, sumPlayer, start);
-                case 1:
-                    return new MinimumComputerStrategy(grid, sumPlayer, start);
-                case 2:
-                    return new MirrorComputerStrategy(grid, sumPlayer, start);
-            }
+
+        switch (rand.nextInt(4)) {
+            default:
+            case 0:
+                return new AlongTheWallsComputerStrategy(grid, sumPlayer, start);
+            case 1:
+                return new MinimumComputerStrategy(grid, sumPlayer, start);
+            case 2:
+                return new MirrorComputerStrategy(grid, sumPlayer, start);
+            case 3:
+                return new MaximumComputerStrategy(grid, sumPlayer, start);
         }
+
     }
 }
 
@@ -142,7 +136,8 @@ public class ControllerGame {
         this.sumPlayer = sumPlayer1;
         fixX = 0;
         fixY = 0;
-        computerStrategy = randomComputerStrategyGenerator.next(grid, sumPlayer2, false);
+        computerStrategy = new AlongTheWallsComputerStrategy(grid, sumPlayer2, false);
+                //randomComputerStrategyGenerator.next(grid, sumPlayer2, false);
         computerStrategyMin1 = new MinimumComputerStrategy(grid, sumPlayer2, false);
     }
 
